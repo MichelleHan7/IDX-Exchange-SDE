@@ -1,0 +1,28 @@
+# Only upload backend and frontend
+/*
+!/backend/
+!/frontend/
+!/.gitignore
+!/README.md
+
+# Sensitive files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dependencies and generated files
+node_modules/
+coverage/
+build/
+dist/
+.DS_Store
+*.log
+
+# Databases
+*.sql
+*.sql.gz
+*.dump
+*.sqlite
+*.sqlite3
