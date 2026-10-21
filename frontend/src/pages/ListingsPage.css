@@ -1,0 +1,46 @@
+
+.listings-page {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  color: #1f2937;
+}
+
+.listings-header {
+  background-color: #183b56;
+  color: white;
+  padding: 36px 8%;
+}
+
+.listings-header h1 {
+  margin: 0;
+  font-size: 32px;
+}
+
+.listings-header p {
+  color: #dbeafe;
+  margin-bottom: 0;
+}
+
+.listings-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.results-summary {
+  font-size: 20px;
+  margin-bottom: 24px;
+}
+
+.property-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 24px;
+}
+
+.error-message {
+  padding: 16px;
+  color: #b91c1c;
+  background: #fee2e2;
+  border-radius: 8px;
+}
