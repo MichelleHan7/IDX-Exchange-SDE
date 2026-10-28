@@ -27,7 +27,7 @@ function getFirstPhoto(rawPhotos) {
 function PropertyCard({ property }) {
   const [imageFailed, setImageFailed] = useState(false);
 
-  const photo = getFirstPhoto("property.L_Photos");
+  const photo = getFirstPhoto(property.L_Photos);
 
   const price = Number(property.L_SystemPrice);
 
