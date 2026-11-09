@@ -1,38 +1,15 @@
 
-import { useState } from "react";
+import { Link } from "react-router";
+import PropertyImageCarousel from "./PropertyImageCarousel";
 import "./PropertyCard.css";
 
-// Safely extract the first photo URL from L_Photos.
-function getFirstPhoto(rawPhotos) {
-  if (!rawPhotos) return null;
-  try {
-    const photos =
-      typeof rawPhotos === "string"
-        ? JSON.parse(rawPhotos)
-        : rawPhotos;
-
-    if (!Array.isArray(photos) || photos.length === 0) {
-      return null;
-    }
-    const firstPhoto = photos[0];
-    return typeof firstPhoto === "string" &&
-      /^https?:\/\//i.test(firstPhoto.trim())
-      ? firstPhoto.trim()
-      : null;
-  } catch {
-    return null;
-  }
-}
-
 function PropertyCard({ property }) {
-  const [imageFailed, setImageFailed] = useState(false);
-
-  const photo = getFirstPhoto(property.L_Photos);
-
   const price = Number(property.L_SystemPrice);
 
   const formattedPrice =
-    property.L_SystemPrice != null && Number.isFinite(price) && price > 0
+    property.L_SystemPrice != null &&
+    Number.isFinite(price) &&
+    price > 0
       ? `$${price.toLocaleString("en-US")}`
       : "Price unavailable";
 
@@ -42,24 +19,28 @@ function PropertyCard({ property }) {
       : `${Number(value).toLocaleString("en-US")} ${unit}`;
 
   const location =
-    [property.L_City, property.L_State].filter(Boolean).join(", ") ||
-    "Location unavailable";
+    [property.L_City, property.L_State]
+      .filter(Boolean)
+      .join(", ") || "Location unavailable";
 
   return (
     <article className="property-card">
+
+      {/* Clickable overlay for property detail navigation */}
+      <Link
+        to={`/property/${property.L_ListingID}`}
+        className="property-card-link"
+        aria-label={`View details for ${
+          property.L_Address || "property"
+        }`}
+      />
+
+      {/* Multiple property photos */}
       <div className="property-image">
-        {photo && !imageFailed ? (
-          <img
-            src={photo}
-            alt={property.L_Address || "Property"}
-            loading="lazy"
-            onError={() => setImageFailed(true)}
-          />
-        ) : (
-          <div className="photo-placeholder">
-            No Photo Available
-          </div>
-        )}
+        <PropertyImageCarousel
+          rawPhotos={property.L_Photos}
+          alt={property.L_Address || "Property"}
+        />
       </div>
 
       <div className="property-info">
@@ -69,7 +50,9 @@ function PropertyCard({ property }) {
           {property.L_Address || "Address unavailable"}
         </p>
 
-        <p className="property-location">{location}</p>
+        <p className="property-location">
+          {location}
+        </p>
 
         <div className="property-stats">
           <span>{formatStat(property.L_Keyword2, "beds")}</span>
