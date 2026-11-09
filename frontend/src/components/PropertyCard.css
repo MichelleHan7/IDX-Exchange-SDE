@@ -1,5 +1,6 @@
 
 .property-card {
+  position: relative;
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
@@ -11,6 +12,21 @@
 .property-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Clickable overlay covering the property card */
+.property-card-link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  cursor: pointer;
+}
+
+/* Visible focus indicator for keyboard navigation */
+.property-card-link:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: -3px;
+  border-radius: 12px;
 }
 
 .property-image {
