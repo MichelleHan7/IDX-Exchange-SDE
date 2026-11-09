@@ -79,7 +79,7 @@ function PropertyImageCarousel({ rawPhotos, alt }) {
       {currentPhoto && !imageFailed ? (
         <img
           src={currentPhoto}
-          alt={`${alt || "Property"} - photo ${safeIndex + 1}`}
+          alt={`${alt || "Property"} - view ${safeIndex + 1}`}
           loading="lazy"
           onError={handleImageError}
         />

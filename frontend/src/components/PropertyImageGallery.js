@@ -153,7 +153,7 @@ function PropertyImageGallery({ rawPhotos, alt = "Property" }) {
         ) : (
           <img
             src={currentPhoto}
-            alt={`${alt} - photo ${currentIndex + 1}`}
+            alt={`${alt} - view ${currentIndex + 1}`}
             onError={handleImageError}
           />
         )}
@@ -251,7 +251,7 @@ function PropertyImageGallery({ rawPhotos, alt = "Property" }) {
               ) : (
                 <img
                   src={currentPhoto}
-                  alt={`${alt} - photo ${currentIndex + 1}`}
+                  alt={`${alt} - view ${currentIndex + 1}`}
                   onError={handleImageError}
                 />
               )}

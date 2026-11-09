@@ -6,12 +6,21 @@ import {
   act,
 } from "@testing-library/react";
 
+import { MemoryRouter } from "react-router";
 import ListingsPage from "./ListingsPage";
 import { fetchProperties } from "../api/client";
 
 jest.mock("../api/client", () => ({
   fetchProperties: jest.fn(),
 }));
+
+function renderListingsPage() {
+  return render(
+    <MemoryRouter>
+      <ListingsPage />
+    </MemoryRouter>
+  );
+}
 
 // Create a Promise that we can resolve manually.
 function deferred() {
@@ -48,7 +57,7 @@ describe("ListingsPage Async Request Handling", () => {
       .mockImplementationOnce(() => clearSearch.promise)
       .mockImplementationOnce(() => latestSearch.promise);
 
-    render(<ListingsPage />);
+    renderListingsPage();
 
     expect(
       await screen.findByText("Initial Home")
@@ -178,7 +187,7 @@ describe("ListingsPage Pagination Integration", () => {
       mockResponse(params)
     );
 
-    render(<ListingsPage />);
+    renderListingsPage();
 
     expect(
       await screen.findByText("All Home 1")
@@ -227,7 +236,7 @@ describe("ListingsPage Pagination Integration", () => {
       mockResponse(params)
     );
 
-    render(<ListingsPage />);
+    renderListingsPage();
 
     await screen.findByText("All Home 1");
 
@@ -262,7 +271,7 @@ describe("ListingsPage Pagination Integration", () => {
       mockResponse(params, params.city === "Pasadena" ? 12 : 45)
     );
 
-    render(<ListingsPage />);
+    renderListingsPage();
 
     await screen.findByText("All Home 1");
 
@@ -315,7 +324,7 @@ describe("ListingsPage Pagination Integration", () => {
       mockResponse(params)
     );
 
-    render(<ListingsPage />);
+    renderListingsPage();
 
     await screen.findByText("All Home 1");
 
