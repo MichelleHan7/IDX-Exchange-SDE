@@ -1,5 +1,6 @@
 const express = require("express");
 const pool = require("../db"); // MySQL connection pool
+const { searchProperties } = require("../services/propertySearch");
 
 const router = express.Router();
 
@@ -13,7 +14,7 @@ const router = express.Router();
  * "500000"  -> valid
  * "-1"      -> invalid
  * "abc"     -> invalid
- * ""         -> invalid
+ * ""        -> invalid
  */
 function isNonNegativeNumber(value) {
   if (value === undefined) {
@@ -27,6 +28,7 @@ function isNonNegativeNumber(value) {
   return Number(value) >= 0;
 }
 
+// GET /api/properties
 router.get("/", async (req, res) => {
   // --------------------------------------------------
   // 1. Read query parameters
@@ -68,6 +70,12 @@ router.get("/", async (req, res) => {
     });
   }
 
+  if (!Number.isSafeInteger(offset)) {
+    return res.status(400).json({
+      error: "offset must be a non-negative safe integer",
+    });
+  }
+
   // --------------------------------------------------
   // 3. Validate numeric filters
   // --------------------------------------------------
@@ -90,7 +98,6 @@ router.get("/", async (req, res) => {
     });
   }
 
-  // Bedrooms should be a non-negative integer.
   if (
     bedsRaw !== undefined &&
     (!/^\d+$/.test(bedsRaw) || Number(bedsRaw) < 0)
@@ -105,18 +112,26 @@ router.get("/", async (req, res) => {
   // --------------------------------------------------
 
   const minPrice =
-    minPriceRaw !== undefined ? Number(minPriceRaw) : undefined;
+    minPriceRaw !== undefined
+      ? Number(minPriceRaw)
+      : undefined;
 
   const maxPrice =
-    maxPriceRaw !== undefined ? Number(maxPriceRaw) : undefined;
+    maxPriceRaw !== undefined
+      ? Number(maxPriceRaw)
+      : undefined;
 
   const beds =
-    bedsRaw !== undefined ? Number(bedsRaw) : undefined;
+    bedsRaw !== undefined
+      ? Number(bedsRaw)
+      : undefined;
 
   const baths =
-    bathsRaw !== undefined ? Number(bathsRaw) : undefined;
+    bathsRaw !== undefined
+      ? Number(bathsRaw)
+      : undefined;
 
-  // minPrice should not be larger than maxPrice.
+  // Validate price range.
   if (
     minPrice !== undefined &&
     maxPrice !== undefined &&
@@ -128,109 +143,38 @@ router.get("/", async (req, res) => {
   }
 
   // --------------------------------------------------
-  // 5. Dynamically build filter conditions
+  // 5. Validate text filters
   // --------------------------------------------------
 
-  const conditions = [];
-  const values = [];
-
-  // City filter
-  if (city !== undefined) {
-    if (city.length === 0) {
-      return res.status(400).json({
-        error: "city cannot be empty",
-      });
-    }
-
-    conditions.push(
-      "LOWER(TRIM(L_City)) = LOWER(TRIM(?))"
-    );
-    values.push(city);
+  if (city !== undefined && city.length === 0) {
+    return res.status(400).json({
+      error: "city cannot be empty",
+    });
   }
 
-  // ZIP code filter
-  if (zipcode !== undefined) {
-    if (zipcode.length === 0) {
-      return res.status(400).json({
-        error: "zipcode cannot be empty",
-      });
-    }
-
-    conditions.push("L_Zip = ?");
-    values.push(zipcode);
-  }
-
-  // Minimum price filter
-  if (minPrice !== undefined) {
-    conditions.push("L_SystemPrice >= ?");
-    values.push(minPrice);
-  }
-
-  // Maximum price filter
-  if (maxPrice !== undefined) {
-    conditions.push("L_SystemPrice <= ?");
-    values.push(maxPrice);
-  }
-
-  // Bedrooms filter
-  if (beds !== undefined) {
-    conditions.push("L_Keyword2 = ?");
-    values.push(beds);
-  }
-
-  // Bathrooms filter
-  if (baths !== undefined) {
-    conditions.push("LM_Dec_3 = ?");
-    values.push(baths);
+  if (zipcode !== undefined && zipcode.length === 0) {
+    return res.status(400).json({
+      error: "zipcode cannot be empty",
+    });
   }
 
   // --------------------------------------------------
-  // 6. Build WHERE clause
-  // --------------------------------------------------
-
-  const whereClause =
-    conditions.length > 0
-      ? `WHERE ${conditions.join(" AND ")}`
-      : "";
-
-  // --------------------------------------------------
-  // 7. Query database
+  // 6. Search properties using the shared service
   // --------------------------------------------------
 
   try {
-    // Count all properties matching the filters.
-    const [countRows] = await pool.query(
-      `
-      SELECT COUNT(*) AS total
-      FROM rets_property
-      ${whereClause}
-      `,
-      values
-    );
-
-    // Fetch only the requested page.
-    const [properties] = await pool.query(
-      `
-      SELECT *
-      FROM rets_property
-      ${whereClause}
-      ORDER BY L_ListingID
-      LIMIT ?
-      OFFSET ?
-      `,
-      [...values, limit, offset]
-    );
-
-    // --------------------------------------------------
-    // 8. Return API response
-    // --------------------------------------------------
-
-    return res.status(200).json({
-      total: countRows[0].total,
+    const data = await searchProperties({
+      city,
+      zipcode,
+      minPrice,
+      maxPrice,
+      beds,
+      baths,
       limit,
       offset,
-      results: properties,
     });
+
+    return res.status(200).json(data);
   } catch (error) {
     console.error("Failed to fetch properties:", error);
 
@@ -240,11 +184,18 @@ router.get("/", async (req, res) => {
   }
 });
 
+// --------------------------------------------------
+// 7. Validate listing ID
+// --------------------------------------------------
+
 function isValidListingId(id) {
   return /^\d{1,10}$/.test(id);
 }
 
-// GET /api/properties/:id/openhouses
+// --------------------------------------------------
+// 8. GET /api/properties/:id/openhouses
+// --------------------------------------------------
+
 router.get("/:id/openhouses", async (req, res) => {
   const { id } = req.params;
 
@@ -272,6 +223,7 @@ router.get("/:id/openhouses", async (req, res) => {
       });
     }
 
+    // Fetch open house events ordered by date and time.
     const [openhouses] = await pool.query(
       `
       SELECT *
@@ -292,7 +244,10 @@ router.get("/:id/openhouses", async (req, res) => {
   }
 });
 
-// GET /api/properties/:id
+// --------------------------------------------------
+// 9. GET /api/properties/:id
+// --------------------------------------------------
+
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
 
