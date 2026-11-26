@@ -1,29 +1,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { getPhotoUrls } from "../utils/photoUtils";
 import "./PropertyImageGallery.css";
-
-// Safely parse photo URLs from the L_Photos JSON field.
-function getPhotoUrls(rawPhotos) {
-  if (!rawPhotos) return [];
-
-  try {
-    const parsed =
-      typeof rawPhotos === "string"
-        ? JSON.parse(rawPhotos)
-        : rawPhotos;
-
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    return parsed
-      .filter((photo) => typeof photo === "string")
-      .map((photo) => photo.trim())
-      .filter((photo) => /^https?:\/\/\S+$/i.test(photo));
-  } catch {
-    return [];
-  }
-}
 
 function PropertyImageGallery({ rawPhotos, alt = "Property" }) {
   const photos = useMemo(
@@ -50,7 +28,6 @@ function PropertyImageGallery({ rawPhotos, alt = "Property" }) {
   const imageFailed =
     currentPhoto && failedPhotos.includes(currentPhoto);
 
-  // Remember images that fail to load.
   function handleImageError() {
     if (!currentPhoto) return;
 
@@ -61,7 +38,6 @@ function PropertyImageGallery({ rawPhotos, alt = "Property" }) {
     );
   }
 
-  // Move to the next or previous photo.
   function changePhoto(direction) {
     if (totalPhotos <= 1) return;
 
@@ -78,7 +54,6 @@ function PropertyImageGallery({ rawPhotos, alt = "Property" }) {
     setLightboxOpen(false);
   }
 
-  // Handle keyboard navigation in full-screen mode.
   useEffect(() => {
     if (!lightboxOpen) return;
 
@@ -106,11 +81,9 @@ function PropertyImageGallery({ rawPhotos, alt = "Property" }) {
 
     window.addEventListener("keydown", handleKeyDown);
 
-    // Prevent the background page from scrolling.
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
-    // Focus the close button for keyboard accessibility.
     closeButtonRef.current?.focus();
 
     return () => {
@@ -119,7 +92,6 @@ function PropertyImageGallery({ rawPhotos, alt = "Property" }) {
     };
   }, [lightboxOpen, totalPhotos]);
 
-  // Close the lightbox when clicking the dark background.
   function handleBackdropClick(event) {
     if (event.target === event.currentTarget) {
       closeLightbox();
@@ -138,8 +110,6 @@ function PropertyImageGallery({ rawPhotos, alt = "Property" }) {
 
   return (
     <div className="property-gallery">
-
-      {/* Main image */}
       <button
         type="button"
         className="gallery-main-button"
@@ -163,12 +133,10 @@ function PropertyImageGallery({ rawPhotos, alt = "Property" }) {
         </span>
       </button>
 
-      {/* Photo counter */}
       <div className="gallery-counter">
         {currentIndex + 1} / {totalPhotos} Photos
       </div>
 
-      {/* Thumbnail strip */}
       {totalPhotos > 1 && (
         <div
           className="gallery-thumbnails"
@@ -208,7 +176,6 @@ function PropertyImageGallery({ rawPhotos, alt = "Property" }) {
         </div>
       )}
 
-      {/* Full-screen lightbox */}
       {lightboxOpen && (
         <div
           className="gallery-lightbox"
@@ -218,8 +185,6 @@ function PropertyImageGallery({ rawPhotos, alt = "Property" }) {
           onClick={handleBackdropClick}
         >
           <div className="gallery-lightbox-content">
-
-            {/* Close button */}
             <button
               ref={closeButtonRef}
               type="button"
@@ -230,7 +195,6 @@ function PropertyImageGallery({ rawPhotos, alt = "Property" }) {
               ×
             </button>
 
-            {/* Previous button */}
             {totalPhotos > 1 && (
               <button
                 type="button"
@@ -242,7 +206,6 @@ function PropertyImageGallery({ rawPhotos, alt = "Property" }) {
               </button>
             )}
 
-            {/* Full-screen image */}
             <div className="lightbox-image-container">
               {imageFailed ? (
                 <div className="lightbox-placeholder">
@@ -257,7 +220,6 @@ function PropertyImageGallery({ rawPhotos, alt = "Property" }) {
               )}
             </div>
 
-            {/* Next button */}
             {totalPhotos > 1 && (
               <button
                 type="button"
@@ -269,15 +231,12 @@ function PropertyImageGallery({ rawPhotos, alt = "Property" }) {
               </button>
             )}
 
-            {/* Full-screen counter */}
             <div className="lightbox-counter">
               {currentIndex + 1} / {totalPhotos}
             </div>
-
           </div>
         </div>
       )}
-
     </div>
   );
 }
