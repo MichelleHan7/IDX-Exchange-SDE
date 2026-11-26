@@ -1,23 +1,11 @@
+
 import PropTypes from "prop-types";
 import { Link } from "react-router";
 import PropertyImageCarousel from "./PropertyImageCarousel";
+import { formatPrice, formatStat } from "../utils/formatters";
 import "./PropertyCard.css";
 
 function PropertyCard({ property }) {
-  const price = Number(property.L_SystemPrice);
-
-  const formattedPrice =
-    property.L_SystemPrice != null &&
-    Number.isFinite(price) &&
-    price > 0
-      ? `$${price.toLocaleString("en-US")}`
-      : "Price unavailable";
-
-  const formatStat = (value, unit) =>
-    value === null || value === undefined || value === ""
-      ? `${unit} N/A`
-      : `${Number(value).toLocaleString("en-US")} ${unit}`;
-
   const location =
     [property.L_City, property.L_State]
       .filter(Boolean)
@@ -41,7 +29,7 @@ function PropertyCard({ property }) {
       </div>
 
       <div className="property-info">
-        <h2>{formattedPrice}</h2>
+        <h2>{formatPrice(property.L_SystemPrice)}</h2>
 
         <p className="property-address">
           {property.L_Address || "Address unavailable"}

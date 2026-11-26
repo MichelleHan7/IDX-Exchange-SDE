@@ -6,6 +6,7 @@ import { fetchPropertyDetail } from "../api/client";
 import PropertyImageGallery from "../components/PropertyImageGallery";
 import PropertyMap from "../components/PropertyMap";
 import PropertyOpenHouses from "../components/PropertyOpenHouses";
+import { formatNumber, formatPrice } from "../utils/formatters";
 
 import "./PropertyDetailPage.css";
 
@@ -48,40 +49,6 @@ function PropertyDetailPage() {
       ignore = true;
     };
   }, [id]);
-
-  // Format numeric fields.
-  const formatNumber = (value) => {
-    if (
-      value === null ||
-      value === undefined ||
-      value === ""
-    ) {
-      return "N/A";
-    }
-
-    const number = Number(value);
-
-    return Number.isFinite(number)
-      ? number.toLocaleString("en-US")
-      : "N/A";
-  };
-
-  // Format property prices.
-  const formatPrice = (value) => {
-    if (
-      value === null ||
-      value === undefined ||
-      value === ""
-    ) {
-      return "Price unavailable";
-    }
-
-    const price = Number(value);
-
-    return Number.isFinite(price) && price > 0
-      ? `$${price.toLocaleString("en-US")}`
-      : "Price unavailable";
-  };
 
   return (
     <main className="detail-page">
