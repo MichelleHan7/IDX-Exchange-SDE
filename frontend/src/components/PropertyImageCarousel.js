@@ -1,29 +1,7 @@
 
 import { useState } from "react";
+import { getPhotoUrls } from "../utils/photoUtils";
 import "./PropertyImageCarousel.css";
-
-// Safely parse photo URLs from the MLS JSON data.
-function getPhotoUrls(rawPhotos) {
-  if (!rawPhotos) return [];
-
-  try {
-    const parsed =
-      typeof rawPhotos === "string"
-        ? JSON.parse(rawPhotos)
-        : rawPhotos;
-
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    return parsed
-      .filter((photo) => typeof photo === "string")
-      .map((photo) => photo.trim())
-      .filter((photo) => /^https?:\/\/\S+$/i.test(photo));
-  } catch {
-    return [];
-  }
-}
 
 function PropertyImageCarousel({ rawPhotos, alt }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -41,7 +19,6 @@ function PropertyImageCarousel({ rawPhotos, alt }) {
   const imageFailed =
     currentPhoto && failedPhotos.includes(currentPhoto);
 
-  // Navigate to the previous photo.
   function handlePrevious(event) {
     event.preventDefault();
     event.stopPropagation();
@@ -51,7 +28,6 @@ function PropertyImageCarousel({ rawPhotos, alt }) {
     );
   }
 
-  // Navigate to the next photo.
   function handleNext(event) {
     event.preventDefault();
     event.stopPropagation();
@@ -61,7 +37,6 @@ function PropertyImageCarousel({ rawPhotos, alt }) {
     );
   }
 
-  // Remember images that cannot be loaded.
   function handleImageError() {
     if (!currentPhoto) return;
 
@@ -74,8 +49,6 @@ function PropertyImageCarousel({ rawPhotos, alt }) {
 
   return (
     <div className="property-image-carousel">
-
-      {/* Current property photo */}
       {currentPhoto && !imageFailed ? (
         <img
           src={currentPhoto}
@@ -89,7 +62,6 @@ function PropertyImageCarousel({ rawPhotos, alt }) {
         </div>
       )}
 
-      {/* Navigation arrows for multiple photos */}
       {totalPhotos > 1 && (
         <>
           <button
@@ -112,13 +84,11 @@ function PropertyImageCarousel({ rawPhotos, alt }) {
         </>
       )}
 
-      {/* Photo counter */}
       {totalPhotos > 0 && (
         <span className="carousel-counter">
           {safeIndex + 1} / {totalPhotos}
         </span>
       )}
-
     </div>
   );
 }
