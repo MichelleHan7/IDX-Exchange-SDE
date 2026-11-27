@@ -1,9 +1,11 @@
+
 require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
 
 const pool = require("./db");
+const logger = require("./utils/logger");
 
 const propertiesRouter = require("./routes/properties");
 const naturalSearchRouter = require("./routes/naturalSearch");
@@ -13,10 +15,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ---------------------------------------------
 // Request logging middleware
-// ---------------------------------------------
-
 app.use((req, res, next) => {
   const start = Date.now();
   const timestamp = new Date().toISOString();
@@ -24,7 +23,7 @@ app.use((req, res, next) => {
   res.on("finish", () => {
     const duration = Date.now() - start;
 
-    console.log(
+    logger.info(
       `${timestamp} ${req.method} ${req.originalUrl} ` +
       `${res.statusCode} ${duration}ms`
     );
@@ -33,17 +32,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// ---------------------------------------------
 // API routes
-// ---------------------------------------------
-
 app.use("/api/properties", propertiesRouter);
 app.use("/api/search", naturalSearchRouter);
 
-// ---------------------------------------------
 // Database health check
-// ---------------------------------------------
-
 app.get("/api/health", async (req, res) => {
   try {
     await pool.query("SELECT 1");
@@ -65,15 +58,12 @@ app.get("/api/health", async (req, res) => {
   }
 });
 
-// ---------------------------------------------
 // Start Express server
-// ---------------------------------------------
-
 const PORT = process.env.PORT || 5000;
 
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    logger.info(`Server running on port ${PORT}`);
   });
 }
 

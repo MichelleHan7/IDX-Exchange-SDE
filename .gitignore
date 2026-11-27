@@ -1,9 +1,14 @@
-# Only upload backend and frontend
+# Allow application source and project documentation
 /*
 !/backend/
 !/frontend/
 !/.gitignore
 !/README.md
+
+# Allow the GitHub pull request template
+!/.github/
+/.github/*
+!/.github/pull_request_template.md
 
 # Sensitive files
 .env
